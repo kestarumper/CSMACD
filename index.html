@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>CSMA/CD</title>
+    <style>
+        table#ether {
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        table#ether #cable td {
+            border: 1px solid black;
+            width: 40px;
+            height: 40px;
+            text-align: center;
+        }
+
+        table#ether #computers th[waiting='true']::before {
+            content: "😴";
+            padding: 5px;
+            margin-right: 5px;
+        }
+
+        pre {
+            border: 1px solid black;
+            padding: 5px;
+        }
+
+        pre::before {
+            content: "📨";
+            font-size: 2em;
+        }
+    </style>
+</head>
+<body>
+    <table id="ether">
+        <tr id="computers">
+
+        </tr>
+        <tr id="cable">
+
+        </tr>
+    </table>
+    <!-- <label id="labelclk" for="clk">100ms</label>
+    <input type="range" name="clk" id="clk" min="10" max="100" value="100"> -->
+</body>
+<script src="main.js"></script>
+</html>
