@@ -1,6 +1,6 @@
 var Packet = require('./Packet');
 
-var CONNECTION_SPEED = 200;
+var CONNECTION_SPEED = 50;
 
 class NetworkNode {
 
@@ -8,7 +8,7 @@ class NetworkNode {
      * 
      * @param {HTMLObjectElement} htmlNode 
      */
-    constructor(htmlNode = null, lifetime = CONNECTION_SPEED+100) {
+    constructor(htmlNode = null, lifetime = 2*CONNECTION_SPEED) {
         this.interfaces = {
             0: null,
             1: null
@@ -19,6 +19,7 @@ class NetworkNode {
 
         this.lifetime = lifetime;
         this.timer = null;
+        this.sendTimer = [null, null];
     }
 
     updateHTML() {
@@ -32,12 +33,15 @@ class NetworkNode {
      */
     receive(packet, input) {
         if(this.data != null) {
+            packet.from = null;
+            packet.to = null;
             packet.data = "###";
         }
         
         this.data = packet;
         this.updateHTML();
 
+        
         if(this.interfaces[0] === input) {
             this.send(1, packet);
         } else if(this.interfaces[1] === input) {
@@ -62,9 +66,10 @@ class NetworkNode {
      * @param {*} data
      * @param {*} recipient 
      */
-    send(recipient, data) {
-        setTimeout(() => {
-            this.interfaces[recipient].receive(data, this);
+    send(recipient, packet) {
+        clearTimeout(this.sendTimer[recipient]);
+        this.sendTimer[recipient] = setTimeout(() => {
+            this.interfaces[recipient].receive(packet, this);
         }, CONNECTION_SPEED)
     }
 
