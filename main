@@ -1,0 +1,3 @@
+#!/bin/bash
+browserify main.js -o bundle.js
+# google-chrome index.html 2> /dev/null
