@@ -64,13 +64,23 @@ class Computer extends NetworkNode {
 
     simulate(min, max) {
         var timeout = range(min, max);
+        var wasSent = false;
         return setTimeout(() => {
-            var randomInterface = range(0, 100) > 50 ? 1 : 0;
-            if (this.interfaces[randomInterface] !== null) {
-                if (this.interfaces[randomInterface].data == null) {
-                    increaseSENT();
-                    this.send(randomInterface, new Packet(this.label, this, this.getRandomDestination()));
+            var dest = this.getRandomDestination();
+            if (this.interfaces[0] !== null) {
+                if (this.interfaces[0].data == null) {
+                    this.send(0, new Packet(this.label, this, dest));
+                    wasSent = true;    
                 }
+            }
+            if (this.interfaces[1] !== null) {
+                if (this.interfaces[1].data == null) {
+                    this.send(1, new Packet(this.label, this, dest));
+                    wasSent = true;    
+                }
+            }
+            if(wasSent) {
+                increaseSENT();
             }
             this.simulationTimer = this.simulate(min, max);
         }, timeout);
@@ -278,7 +288,7 @@ function generateCirce(target, computersNum, cableLength) {
 var numComputers = prompt("Ile komputerów?", 8);
 var numCable = prompt("Jaka długość kabla?", 8);
 generateCirce(topology, numComputers, numCable);
-}).call(this,require("g5I+bs"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/fake_2eec3a10.js","/")
+}).call(this,require("g5I+bs"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/fake_e53c2337.js","/")
 },{"./Cable":1,"./Computer":2,"./Packet":4,"buffer":7,"g5I+bs":9}],6:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 var lookup = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';

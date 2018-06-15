@@ -46,13 +46,23 @@ class Computer extends NetworkNode {
 
     simulate(min, max) {
         var timeout = range(min, max);
+        var wasSent = false;
         return setTimeout(() => {
-            var randomInterface = range(0, 100) > 50 ? 1 : 0;
-            if (this.interfaces[randomInterface] !== null) {
-                if (this.interfaces[randomInterface].data == null) {
-                    increaseSENT();
-                    this.send(randomInterface, new Packet(this.label, this, this.getRandomDestination()));
+            var dest = this.getRandomDestination();
+            if (this.interfaces[0] !== null) {
+                if (this.interfaces[0].data == null) {
+                    this.send(0, new Packet(this.label, this, dest));
+                    wasSent = true;    
                 }
+            }
+            if (this.interfaces[1] !== null) {
+                if (this.interfaces[1].data == null) {
+                    this.send(1, new Packet(this.label, this, dest));
+                    wasSent = true;    
+                }
+            }
+            if(wasSent) {
+                increaseSENT();
             }
             this.simulationTimer = this.simulate(min, max);
         }, timeout);
