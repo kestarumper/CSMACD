@@ -23,7 +23,9 @@ class NetworkNode {
     }
 
     updateHTML() {
-        this.htmlNode.innerHTML = this.data;
+        if(this.htmlNode != null) {
+            this.htmlNode.innerHTML = this.data;
+        }
     }
 
     /**

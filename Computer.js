@@ -60,12 +60,17 @@ class Computer extends NetworkNode {
 
     receive(packet, input) {
         if (packet.data == "###") {
-            this.htmlNode.setAttribute('disabled', 'true');
+            if(this.htmlNode != null) {
+                this.htmlNode.setAttribute('disabled', 'true');
+            }
+
             clearTimeout(this.simulationTimer);
             var timeout = range(waitingTimeAfterCollisionMin, waitingTimeAfterCollisionMax);
-            // console.log(`Detected collision, stopping for ${timeout / 1000}s`);
+
             setTimeout(() => {
-                this.htmlNode.setAttribute('disabled', 'false');
+                if(this.htmlNode != null) {
+                    this.htmlNode.setAttribute('disabled', 'false');
+                }
                 this.simulationTimer = this.simulate(waitBeforeSendMin, waitBeforeSendMax);
             }, timeout);
         } else {

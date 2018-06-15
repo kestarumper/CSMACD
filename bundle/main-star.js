@@ -14,7 +14,7 @@ class Cable extends NetworkNode {
 
 module.exports = Cable;
 }).call(this,require("g5I+bs"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/Cable.js","/")
-},{"./NetworkNode":3,"buffer":7,"g5I+bs":9}],2:[function(require,module,exports){
+},{"./NetworkNode":3,"buffer":8,"g5I+bs":10}],2:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 var Packet = require('./Packet');
 var NetworkNode = require('./NetworkNode');
@@ -78,12 +78,17 @@ class Computer extends NetworkNode {
 
     receive(packet, input) {
         if (packet.data == "###") {
-            this.htmlNode.setAttribute('disabled', 'true');
+            if(this.htmlNode != null) {
+                this.htmlNode.setAttribute('disabled', 'true');
+            }
+
             clearTimeout(this.simulationTimer);
             var timeout = range(waitingTimeAfterCollisionMin, waitingTimeAfterCollisionMax);
-            // console.log(`Detected collision, stopping for ${timeout / 1000}s`);
+
             setTimeout(() => {
-                this.htmlNode.setAttribute('disabled', 'false');
+                if(this.htmlNode != null) {
+                    this.htmlNode.setAttribute('disabled', 'false');
+                }
                 this.simulationTimer = this.simulate(waitBeforeSendMin, waitBeforeSendMax);
             }, timeout);
         } else {
@@ -101,7 +106,7 @@ class Computer extends NetworkNode {
 
 module.exports = Computer;
 }).call(this,require("g5I+bs"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/Computer.js","/")
-},{"./NetworkNode":3,"./Packet":4,"buffer":7,"g5I+bs":9}],3:[function(require,module,exports){
+},{"./NetworkNode":3,"./Packet":4,"buffer":8,"g5I+bs":10}],3:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 var Packet = require('./Packet');
 
@@ -128,7 +133,9 @@ class NetworkNode {
     }
 
     updateHTML() {
-        this.htmlNode.innerHTML = this.data;
+        if(this.htmlNode != null) {
+            this.htmlNode.innerHTML = this.data;
+        }
     }
 
     /**
@@ -190,7 +197,7 @@ class NetworkNode {
 
 module.exports = NetworkNode;
 }).call(this,require("g5I+bs"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/NetworkNode.js","/")
-},{"./Packet":4,"buffer":7,"g5I+bs":9}],4:[function(require,module,exports){
+},{"./Packet":4,"buffer":8,"g5I+bs":10}],4:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 class Packet {
     constructor(data, from = null, to = null) {
@@ -206,75 +213,130 @@ class Packet {
 
 module.exports = Packet;
 }).call(this,require("g5I+bs"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/Packet.js","/")
-},{"buffer":7,"g5I+bs":9}],5:[function(require,module,exports){
+},{"buffer":8,"g5I+bs":10}],5:[function(require,module,exports){
+(function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
+var Packet = require('./Packet');
+var NetworkNode = require('./NetworkNode');
+
+var GLOBAL_INQUEUE = document.getElementById('inqueue');
+
+function increaseINQEUE() {
+    GLOBAL_INQUEUE.innerText = parseInt(GLOBAL_INQUEUE.innerText) + 1;
+}
+function decreaseINQEUE() {
+    GLOBAL_INQUEUE.innerText = parseInt(GLOBAL_INQUEUE.innerText) - 1;
+}
+
+class Server extends NetworkNode {
+    constructor(processTime = 500) {
+        super(null);
+        this.label = "Server";
+        this.interfaces = {};
+        this.processTime = processTime;
+
+        this.logicalInterfaces = {};
+    }
+
+    join(node, id) {
+        super.join(node, id);
+        this.logicalInterfaces[id] = {
+            queue: [],
+            timer: null,
+            out: this.interfaces[id],
+        }
+    }
+
+    receive(data, input) {
+        
+        if(data.data != "###") {
+            console.log(`Received '${data.data}' from ${data.from.label}`);
+
+            var ifc = this.logicalInterfaces[data.from.label];
+            ifc.queue.push(data); // dodanie pakietu do kolejki na porcie wychodzącym
+            increaseINQEUE();
+    
+            if(ifc.timer == null) {
+                // ustawienie demona który będzie wypluwał pakiety które otrzymał na danym interfejsie
+                // do odpowiednich interfejsów wychodzacych
+                ifc.timer = setInterval(() => {
+                    // Ta pętla wywołuje się co "this.processTime" milisekund
+                    // Sprawdzam czy łącze jest puste
+                    if(ifc.out.data == null) {
+                        var packet = ifc.queue.shift();
+                        decreaseINQEUE();
+                        var recipient = packet.to;
+                        // wyslij pakiet na logicznym porcie
+                        // ktory prowadzi do komputera koncowego
+                        this.send(recipient.label, packet);
+        
+                        if(ifc.queue.length < 1) {
+                            // jesli nie ma juz pakietow do wyslania, zabij demona
+                            clearInterval(ifc.timer);
+                            ifc.timer = null;
+                        }
+                    }
+                }, this.processTime);
+            }
+        } else {
+            console.error("Server detected collision");
+        }
+        
+
+    }
+}
+
+module.exports = Server;
+}).call(this,require("g5I+bs"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/Server.js","/")
+},{"./NetworkNode":3,"./Packet":4,"buffer":8,"g5I+bs":10}],6:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 var Packet = require('./Packet');
 var Cable = require('./Cable');
 var Computer = require('./Computer');
-
-var c1 = new Cable(document.getElementById('cable1'));
-var c2 = new Cable(document.getElementById('cable2'));
+var Server = require('./Server');
 
 var topology = document.getElementById('topology');
 
-function generateCirce(target, computersNum, cableLength) {
-    function rotate(point, angle) {
-        var matrix = [
-            Math.cos(angle), -Math.sin(angle),
-            Math.sin(angle), Math.cos(angle)
-        ];
-        var x = matrix[0] * point.x + matrix[1] * point.y;
-        var y = matrix[2] * point.x + matrix[3] * point.y;
-        return {x, y};
-    }
-
-    var nodes = [];
+var server = new Server();
+function generateStar(target, computersNum, cableLength) {
+    var computers = [];
     var node;
-    var tmp;
-    var centerX = target.clientWidth / 2;
-    var centerY = target.clientHeight / 2;
+    var tmpCable;
+    var cableNode;
+    for (let i = 0; i < computersNum; i += 1) {
+        node = new Computer(null, `PC${i}`);
+        tmpCable = [];
+        for (let j = 0; j < cableLength; j += 1) {
+            cableNode = new Cable(null);
+            tmpCable.push(cableNode);
+        }
 
-    var angle = (2 * Math.PI) / (computersNum*cableLength);
-    var radius = target.clientHeight / 4;
-    var startingPoint = {x: radius, y: radius};
+        node.join(tmpCable[0], 0);
+        tmpCable[0].join(node, 1);
+        for (let j = 0; j < cableLength - 1; j += 1) {
+            tmpCable[j].join(tmpCable[j + 1], 0);
+            tmpCable[j + 1].join(tmpCable[j], 1);
+        }
+        tmpCable[tmpCable.length - 1].join(server, 0);
+        server.join(tmpCable[tmpCable.length - 1], node.label);
 
-    var rotatedPoint;
-    for(let i = 0; i < computersNum*cableLength; i += 1) {
-        rotatedPoint = rotate(startingPoint, i * angle);
-        rotatedPoint.x += centerX;
-        rotatedPoint.y += centerY;
-        
-        tmp = document.createElement(i % cableLength == 0 ? 'computer' : 'cable');
-        tmp.style.left = `${rotatedPoint.x}px`;
-        tmp.style.top = `${rotatedPoint.y}px`;
-        target.appendChild(tmp);
-        
-        node = i % cableLength == 0 ? new Computer(tmp, `PC${i}`) : new Cable(tmp);
-        nodes.push(node);
+        computers.push(node);
     }
 
-    for(let i = 0; i < nodes.length - 1; i += 1) {
-        nodes[i].join(nodes[i+1], 0);
-        nodes[i+1].join(nodes[i], 1);
-    }
-    nodes[nodes.length-1].join(nodes[0], 0);
-    nodes[0].join(nodes[nodes.length-1], 1);
-
-    for(const me of nodes) {
-        if(me instanceof Computer) {
-            for(const node of nodes) {
-                if(node instanceof Computer && node !== me) {
-                    me.addDestination(node);
-                }
+    for (const me of computers) {
+        for (const node of computers) {
+            if (node !== me) {
+                me.addDestination(node);
             }
         }
     }
-    debugger;
 }
 
-generateCirce(topology, 8, 8);
-}).call(this,require("g5I+bs"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/fake_e8061c79.js","/")
-},{"./Cable":1,"./Computer":2,"./Packet":4,"buffer":7,"g5I+bs":9}],6:[function(require,module,exports){
+var numComputers = prompt("Ile komputerów?", 4);
+var numCable = prompt("Jaka długość kabla?", 4);
+generateStar(topology, numComputers, numCable);
+console.log(server);
+}).call(this,require("g5I+bs"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/fake_bc778347.js","/")
+},{"./Cable":1,"./Computer":2,"./Packet":4,"./Server":5,"buffer":8,"g5I+bs":10}],7:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 var lookup = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
 
@@ -402,7 +464,7 @@ var lookup = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
 }(typeof exports === 'undefined' ? (this.base64js = {}) : exports))
 
 }).call(this,require("g5I+bs"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/base64-js/lib/b64.js","/node_modules/base64-js/lib")
-},{"buffer":7,"g5I+bs":9}],7:[function(require,module,exports){
+},{"buffer":8,"g5I+bs":10}],8:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /*!
  * The buffer module from node.js, for the browser.
@@ -1515,7 +1577,7 @@ function assert (test, message) {
 }
 
 }).call(this,require("g5I+bs"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/buffer/index.js","/node_modules/buffer")
-},{"base64-js":6,"buffer":7,"g5I+bs":9,"ieee754":8}],8:[function(require,module,exports){
+},{"base64-js":7,"buffer":8,"g5I+bs":10,"ieee754":9}],9:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 exports.read = function (buffer, offset, isLE, mLen, nBytes) {
   var e, m
@@ -1603,7 +1665,7 @@ exports.write = function (buffer, value, offset, isLE, mLen, nBytes) {
 }
 
 }).call(this,require("g5I+bs"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/ieee754/index.js","/node_modules/ieee754")
-},{"buffer":7,"g5I+bs":9}],9:[function(require,module,exports){
+},{"buffer":8,"g5I+bs":10}],10:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 // shim for using process in browser
 
@@ -1670,4 +1732,4 @@ process.chdir = function (dir) {
 };
 
 }).call(this,require("g5I+bs"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/process/browser.js","/node_modules/process")
-},{"buffer":7,"g5I+bs":9}]},{},[5])
+},{"buffer":8,"g5I+bs":10}]},{},[6])

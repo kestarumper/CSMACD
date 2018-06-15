@@ -2,9 +2,6 @@ var Packet = require('./Packet');
 var Cable = require('./Cable');
 var Computer = require('./Computer');
 
-var c1 = new Cable(document.getElementById('cable1'));
-var c2 = new Cable(document.getElementById('cable2'));
-
 var topology = document.getElementById('topology');
 
 function generateCirce(target, computersNum, cableLength) {
@@ -59,7 +56,8 @@ function generateCirce(target, computersNum, cableLength) {
             }
         }
     }
-    debugger;
 }
 
-generateCirce(topology, 8, 8);
+var numComputers = prompt("Ile komputerów?", 8);
+var numCable = prompt("Jaka długość kabla?", 8);
+generateCirce(topology, numComputers, numCable);

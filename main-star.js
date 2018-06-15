@@ -1,65 +1,46 @@
 var Packet = require('./Packet');
 var Cable = require('./Cable');
 var Computer = require('./Computer');
-
-var c1 = new Cable(document.getElementById('cable1'));
-var c2 = new Cable(document.getElementById('cable2'));
+var Server = require('./Server');
 
 var topology = document.getElementById('topology');
 
-function generateCirce(target, computersNum, cableLength) {
-    function rotate(point, angle) {
-        var matrix = [
-            Math.cos(angle), -Math.sin(angle),
-            Math.sin(angle), Math.cos(angle)
-        ];
-        var x = matrix[0] * point.x + matrix[1] * point.y;
-        var y = matrix[2] * point.x + matrix[3] * point.y;
-        return {x, y};
-    }
-
-    var nodes = [];
+var server = new Server();
+function generateStar(target, computersNum, cableLength) {
+    var computers = [];
     var node;
-    var tmp;
-    var centerX = target.clientWidth / 2;
-    var centerY = target.clientHeight / 2;
+    var tmpCable;
+    var cableNode;
+    for (let i = 0; i < computersNum; i += 1) {
+        node = new Computer(null, `PC${i}`);
+        tmpCable = [];
+        for (let j = 0; j < cableLength; j += 1) {
+            cableNode = new Cable(null);
+            tmpCable.push(cableNode);
+        }
 
-    var angle = (2 * Math.PI) / (computersNum*cableLength);
-    var radius = target.clientHeight / 4;
-    var startingPoint = {x: radius, y: radius};
+        node.join(tmpCable[0], 0);
+        tmpCable[0].join(node, 1);
+        for (let j = 0; j < cableLength - 1; j += 1) {
+            tmpCable[j].join(tmpCable[j + 1], 0);
+            tmpCable[j + 1].join(tmpCable[j], 1);
+        }
+        tmpCable[tmpCable.length - 1].join(server, 0);
+        server.join(tmpCable[tmpCable.length - 1], node.label);
 
-    var rotatedPoint;
-    for(let i = 0; i < computersNum*cableLength; i += 1) {
-        rotatedPoint = rotate(startingPoint, i * angle);
-        rotatedPoint.x += centerX;
-        rotatedPoint.y += centerY;
-        
-        tmp = document.createElement(i % cableLength == 0 ? 'computer' : 'cable');
-        tmp.style.left = `${rotatedPoint.x}px`;
-        tmp.style.top = `${rotatedPoint.y}px`;
-        target.appendChild(tmp);
-        
-        node = i % cableLength == 0 ? new Computer(tmp, `PC${i}`) : new Cable(tmp);
-        nodes.push(node);
+        computers.push(node);
     }
 
-    for(let i = 0; i < nodes.length - 1; i += 1) {
-        nodes[i].join(nodes[i+1], 0);
-        nodes[i+1].join(nodes[i], 1);
-    }
-    nodes[nodes.length-1].join(nodes[0], 0);
-    nodes[0].join(nodes[nodes.length-1], 1);
-
-    for(const me of nodes) {
-        if(me instanceof Computer) {
-            for(const node of nodes) {
-                if(node instanceof Computer && node !== me) {
-                    me.addDestination(node);
-                }
+    for (const me of computers) {
+        for (const node of computers) {
+            if (node !== me) {
+                me.addDestination(node);
             }
         }
     }
-    debugger;
 }
 
-generateCirce(topology, 8, 8);
+var numComputers = prompt("Ile komputerów?", 4);
+var numCable = prompt("Jaka długość kabla?", 4);
+generateStar(topology, numComputers, numCable);
+console.log(server);

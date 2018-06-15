@@ -78,12 +78,17 @@ class Computer extends NetworkNode {
 
     receive(packet, input) {
         if (packet.data == "###") {
-            this.htmlNode.setAttribute('disabled', 'true');
+            if(this.htmlNode != null) {
+                this.htmlNode.setAttribute('disabled', 'true');
+            }
+
             clearTimeout(this.simulationTimer);
             var timeout = range(waitingTimeAfterCollisionMin, waitingTimeAfterCollisionMax);
-            // console.log(`Detected collision, stopping for ${timeout / 1000}s`);
+
             setTimeout(() => {
-                this.htmlNode.setAttribute('disabled', 'false');
+                if(this.htmlNode != null) {
+                    this.htmlNode.setAttribute('disabled', 'false');
+                }
                 this.simulationTimer = this.simulate(waitBeforeSendMin, waitBeforeSendMax);
             }, timeout);
         } else {
@@ -128,7 +133,9 @@ class NetworkNode {
     }
 
     updateHTML() {
-        this.htmlNode.innerHTML = this.data;
+        if(this.htmlNode != null) {
+            this.htmlNode.innerHTML = this.data;
+        }
     }
 
     /**
@@ -212,9 +219,6 @@ var Packet = require('./Packet');
 var Cable = require('./Cable');
 var Computer = require('./Computer');
 
-var c1 = new Cable(document.getElementById('cable1'));
-var c2 = new Cable(document.getElementById('cable2'));
-
 var topology = document.getElementById('topology');
 
 function generateCirce(target, computersNum, cableLength) {
@@ -269,11 +273,12 @@ function generateCirce(target, computersNum, cableLength) {
             }
         }
     }
-    debugger;
 }
 
-generateCirce(topology, 8, 8);
-}).call(this,require("g5I+bs"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/fake_b876172a.js","/")
+var numComputers = prompt("Ile komputerów?", 8);
+var numCable = prompt("Jaka długość kabla?", 8);
+generateCirce(topology, numComputers, numCable);
+}).call(this,require("g5I+bs"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/fake_2eec3a10.js","/")
 },{"./Cable":1,"./Computer":2,"./Packet":4,"buffer":7,"g5I+bs":9}],6:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 var lookup = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
