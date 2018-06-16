@@ -35,6 +35,7 @@ class Computer extends NetworkNode {
         this.simulationTimer = this.simulate(waitBeforeSendMin, waitBeforeSendMax);
         this.destinations = [];
         this.mailbox = [];
+        this.waitingTimer = null;
     }
 
     addDestination(host) {
@@ -76,19 +77,22 @@ class Computer extends NetworkNode {
 
     receive(packet, input) {
         if (packet.data == "###") {
-            if (this.htmlNode != null) {
-                this.htmlNode.setAttribute('disabled', 'true');
-            }
-
-            clearTimeout(this.simulationTimer);
-            var timeout = range(waitingTimeAfterCollisionMin, waitingTimeAfterCollisionMax);
-
-            setTimeout(() => {
+            if(this.waitingTimer != null) {
                 if (this.htmlNode != null) {
-                    this.htmlNode.setAttribute('disabled', 'false');
+                    this.htmlNode.setAttribute('disabled', 'true');
                 }
-                this.simulationTimer = this.simulate(waitBeforeSendMin, waitBeforeSendMax);
-            }, timeout);
+    
+                clearTimeout(this.simulationTimer);
+                var timeout = range(waitingTimeAfterCollisionMin, waitingTimeAfterCollisionMax);
+    
+                this.waitingTimer = setTimeout(() => {
+                    if (this.htmlNode != null) {
+                        this.htmlNode.setAttribute('disabled', 'false');
+                    }
+                    this.waitingTimer = null;
+                    this.simulationTimer = this.simulate(waitBeforeSendMin, waitBeforeSendMax);
+                }, timeout);
+            }
         } else {
             if (packet.from === this) {
                 console.log("Packet returned to sending host.");

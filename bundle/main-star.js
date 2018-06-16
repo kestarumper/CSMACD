@@ -53,6 +53,7 @@ class Computer extends NetworkNode {
         this.simulationTimer = this.simulate(waitBeforeSendMin, waitBeforeSendMax);
         this.destinations = [];
         this.mailbox = [];
+        this.waitingTimer = null;
     }
 
     addDestination(host) {
@@ -94,19 +95,22 @@ class Computer extends NetworkNode {
 
     receive(packet, input) {
         if (packet.data == "###") {
-            if (this.htmlNode != null) {
-                this.htmlNode.setAttribute('disabled', 'true');
-            }
-
-            clearTimeout(this.simulationTimer);
-            var timeout = range(waitingTimeAfterCollisionMin, waitingTimeAfterCollisionMax);
-
-            setTimeout(() => {
+            if(this.waitingTimer != null) {
                 if (this.htmlNode != null) {
-                    this.htmlNode.setAttribute('disabled', 'false');
+                    this.htmlNode.setAttribute('disabled', 'true');
                 }
-                this.simulationTimer = this.simulate(waitBeforeSendMin, waitBeforeSendMax);
-            }, timeout);
+    
+                clearTimeout(this.simulationTimer);
+                var timeout = range(waitingTimeAfterCollisionMin, waitingTimeAfterCollisionMax);
+    
+                this.waitingTimer = setTimeout(() => {
+                    if (this.htmlNode != null) {
+                        this.htmlNode.setAttribute('disabled', 'false');
+                    }
+                    this.waitingTimer = null;
+                    this.simulationTimer = this.simulate(waitBeforeSendMin, waitBeforeSendMax);
+                }, timeout);
+            }
         } else {
             if (packet.from === this) {
                 console.log("Packet returned to sending host.");
@@ -362,7 +366,7 @@ var numComputers = prompt("Ile komputerów?", 4);
 var numCable = prompt("Jaka długość kabla?", 4);
 generateStar(topology, numComputers, numCable);
 console.log(server);
-}).call(this,require("g5I+bs"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/fake_b3cf4829.js","/")
+}).call(this,require("g5I+bs"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/fake_318473d5.js","/")
 },{"./Cable":1,"./Computer":2,"./Packet":4,"./Server":5,"buffer":8,"g5I+bs":10}],7:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 var lookup = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
