@@ -95,7 +95,7 @@ class Computer extends NetworkNode {
 
     receive(packet, input) {
         if (packet.data == "###") {
-            if(this.waitingTimer != null) {
+            if(this.waitingTimer == null) {
                 if (this.htmlNode != null) {
                     this.htmlNode.setAttribute('disabled', 'true');
                 }
@@ -366,7 +366,7 @@ var numComputers = prompt("Ile komputerów?", 4);
 var numCable = prompt("Jaka długość kabla?", 4);
 generateStar(topology, numComputers, numCable);
 console.log(server);
-}).call(this,require("g5I+bs"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/fake_318473d5.js","/")
+}).call(this,require("g5I+bs"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/fake_7e851fef.js","/")
 },{"./Cable":1,"./Computer":2,"./Packet":4,"./Server":5,"buffer":8,"g5I+bs":10}],7:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 var lookup = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';

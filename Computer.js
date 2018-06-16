@@ -77,7 +77,7 @@ class Computer extends NetworkNode {
 
     receive(packet, input) {
         if (packet.data == "###") {
-            if(this.waitingTimer != null) {
+            if(this.waitingTimer == null) {
                 if (this.htmlNode != null) {
                     this.htmlNode.setAttribute('disabled', 'true');
                 }
